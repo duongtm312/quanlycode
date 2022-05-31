@@ -1,3 +1,7 @@
+package Controllers;
+
+import io.ReadAndWrite;
+import io.ReadAndWrite2;
 import models.ClassCG;
 import models.Student;
 
@@ -5,17 +9,18 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 public class Menu {
+    ReadAndWrite rw = new ReadAndWrite();
+    ReadAndWrite2 rw2 = new ReadAndWrite2();
     Scanner scanner = new Scanner(System.in);
-    ArrayList<Student> students = new ArrayList<>();
-    ArrayList<ClassCG> classCGS = new ArrayList<>();
+    ArrayList<Student> students = rw2.reader("student.csv");
+    ArrayList<ClassCG> classCGS = rw.renderClassCG();
     public void menu() {
         try {
             System.out.println("1|Enter student");
             System.out.println("2|Display student");
             System.out.println("3|Display student by class");
-            System.out.println("4|Exit");
-            students = readerStudent();
-            classCGS = renderClassCG();
+            System.out.println("4|Delete student");
+            System.out.println("5|Exit");
             int choice = Integer.parseInt(scanner.nextLine());
             switch (choice) {
                 case 1:
@@ -28,56 +33,18 @@ public class Menu {
                     displayStudentByClass();
                     break;
                 case 4:
+                    deleteStudent();
+                    break;
+                case 5:
+                    rw2.write(students,"student.csv");
+//                   rw.write(students,"student.csv");
                     System.exit(0);
             }
         }catch (Exception e){
-            e.printStackTrace();
+            System.err.println("Wrong choice");
         }
 
     }
-    public ArrayList<Student> readerStudent() {
-        File file = new File("student.csv");
-        ArrayList<Student> list = new ArrayList<>();
-        try {
-            FileReader fileReader = new FileReader(file);
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
-            String str = bufferedReader.readLine();
-            while (str != null) {
-                String[] arr = str.split(",");
-                int age = Integer.parseInt(arr[1]);
-                list.add(new Student(arr[0], age, arr[2], arr[3], arr[4], arr[5]));
-                str = bufferedReader.readLine();
-            }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return list;
-    }
-
-    public ArrayList<ClassCG> renderClassCG() {
-        File file = new File("class.csv");
-        ArrayList<ClassCG> cls = new ArrayList<>();
-        try {
-            FileReader fileReader = new FileReader(file);
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
-            String str = bufferedReader.readLine();
-            while (str != null) {
-                String[] arr = str.split(",");
-                int numberStudent = Integer.parseInt(arr[3]);
-                cls.add(new ClassCG(arr[0], arr[1], arr[2], numberStudent));
-                str = bufferedReader.readLine();
-            }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return cls;
-    }
-
     public Student createStudent() {
         while (true) {
             try {
@@ -94,7 +61,6 @@ public class Menu {
                 System.out.println("Choice class");
                 String nameClass = choiceClass();
                 Student stNew = new Student(name, age, birth, phone, address, nameClass);
-                write(stNew);
                 return stNew;
             } catch (Exception e) {
                 System.err.println("Retype");
@@ -105,32 +71,28 @@ public class Menu {
     }
 
     public String choiceClass() {
+        if (classCGS.isEmpty()){
+            return null;
+        }
         int index = 1;
         for (ClassCG cg : classCGS
         ) {
             System.out.println("ID " + index + cg);
             index++;
         }
-        System.out.println("Enter id class");
-        int id = Integer.parseInt(scanner.nextLine());
-        String name = classCGS.get(id - 1).getClassName();
-        return name;
-    }
-
-    public void write(Student sd) {
-        File file = new File("student.csv");
-        try {
-            FileWriter fileWriter = new FileWriter(file,true);
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-            bufferedWriter.newLine();
-            bufferedWriter.write(sd.toString());
-            bufferedWriter.close();
-            fileWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        while (true) {
+            try {
+                System.out.println("Enter id class");
+                int id = Integer.parseInt(scanner.nextLine());
+                String name = classCGS.get(id - 1).getClassName();
+                return name;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
     }
+
 
     public void displayStudent() {
         for (Student st : students
@@ -146,5 +108,10 @@ public class Menu {
                 System.out.println(students.get(i));
             }
         }
+    }
+    public void deleteStudent(){
+        System.out.println("Enter index");
+        int index = Integer.parseInt(scanner.nextLine());
+        students.remove(index);
     }
 }

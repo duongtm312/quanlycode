@@ -1,6 +1,8 @@
 package models;
 
-public class ClassCG {
+import java.io.Serializable;
+
+public class ClassCG implements Serializable {
     private String className;
     private String startDay;
     private String course;
